@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.title = `${newTitle} | DecorInspire`;
         detailTitle.textContent = newTitle;
 
-        const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(term)}&w=1200&h=800&c=7&rs=1&p=0`;
+        const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(term)}&w=800&h=1200&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
         detailImageContainer.innerHTML = `<img src="${imageUrl}" alt="${newTitle}">`;
 
         // ▼▼▼ ARTIKEL BARU: Template artikel dengan format Spintax ▼▼▼

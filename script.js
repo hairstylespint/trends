@@ -1,75 +1,85 @@
-document.addEventListener('DOMContentLoaded', function() {
-    let allKeywords = [];
-    let currentIndex = 0;
-    const batchSize = 15;
-    let isLoading = false;
-    const contentContainer = document.getElementById('auto-content-container');
-    const loader = document.getElementById('loader');
+document.addEventListener('DOMContentLoaded', function() {     
+    let allKeywords = [];     
+    let currentIndex = 0;     
+    const batchSize = 15;     
+    let isLoading = false;     
+    const contentContainer = document.getElementById('auto-content-container');     
+    const loader = document.getElementById('loader');              
+    
+    function shuffleArray(array) {          
+        for (let i = array.length - 1; i > 0; i--) {              
+            const j = Math.floor(Math.random() * (i + 1));             
+            [array[i], array[j]] = [array[j], array[i]];          
+        }      
+    }          
+    
+    function capitalizeEachWord(str) {          
+        if (!str) return '';          
+        return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');      
+    }     
+    
+    function loadKeywords() {         
+        fetch('keyword.txt')             
+            .then(response => response.text())             
+            .then(data => {                 
+                allKeywords = data.split('\n').map(k => k.trim()).filter(k => k.length > 0);                 
+                shuffleArray(allKeywords);                 
+                loadMoreContent();             
+            })             
+            .catch(error => {                 
+                console.error('Error loading keywords:', error);                 
+                if(loader) loader.textContent = 'Failed to load content.';             
+            });     
+    }     
+    
+    function generateSeoTitle(baseKeyword) {         
+        const hookWords = ['Stunning', 'Trendy', 'Elegant', 'Chic', 'Beautiful', 'Modern', 'Classic', 'Gorgeous', 'Best', 'Amazing'];         
+        const suffixWords = ['Hairstyle', 'Haircut', 'Style Guide', 'Ideas', 'Looks'];         
+        const randomHook = hookWords[Math.floor(Math.random() * hookWords.length)];         
+        const randomSuffix = suffixWords[Math.floor(Math.random() * suffixWords.length)];         
+        return `${randomHook} ${capitalizeEachWord(baseKeyword)} ${randomSuffix}`;     
+    }     
+    
+    function loadMoreContent() {         
+        if (isLoading || currentIndex >= allKeywords.length) return;         
+        isLoading = true;         
+        if(loader) loader.style.display = 'block';         
+        const endIndex = Math.min(currentIndex + batchSize, allKeywords.length);         
+        const fragment = document.createDocumentFragment();         
+        for (let i = currentIndex; i < endIndex; i++) {             
+            const keyword = allKeywords[i];             
+            const title = generateSeoTitle(keyword);             
+            const keywordForUrl = keyword.replace(/\s/g, '-').toLowerCase();             
+            const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`;                          
+            
+            const queryImage = keyword + " hairstyle hair model";             
+            const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=400&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;             
+            const article = document.createElement('article');             
+            article.className = 'content-card';             
+            article.innerHTML = `                 
+                <a href="${linkUrl}">                     
+                    <img src="${imageUrl}" alt="${title}" loading="lazy">                     
+                    <div class="content-card-body">                         
+                        <h2>${title}</h2>                     
+                    </div>                 
+                </a>             
+            `;             
+            fragment.appendChild(article);         
+        }         
+        if(contentContainer) contentContainer.appendChild(fragment);         
+        currentIndex = endIndex;         
+        isLoading = false;                  
         
-    function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[array[i], array[j]] = [array[j], array[i]]; } }
-    function capitalizeEachWord(str) { if (!str) return ''; return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); }
-    function generateSeoTitle(baseKeyword) { const hookWords = ['Best', 'Amazing', 'Cool', 'Inspiring', 'Creative', 'Awesome', 'Stunning', 'Beautiful', 'Unique', 'Ideas', 'Inspiration', 'Designs']; const randomHook = hookWords[Math.floor(Math.random() * hookWords.length)]; const randomNumber = Math.floor(Math.random() * (200 - 55 + 1)) + 55; const capitalizedKeyword = capitalizeEachWord(baseKeyword); return `${randomNumber} ${randomHook} ${capitalizedKeyword}`; }
-
-    function loadNextBatch() {
-        if (isLoading) return;
-        isLoading = true;
-        loader.style.display = 'block';
-
-        const batch = allKeywords.slice(currentIndex, currentIndex + batchSize);
-        
-        setTimeout(() => {
-            batch.forEach(keyword => {
-                const keywordForUrl = keyword.replace(/\s/g, '-').toLowerCase();
-                const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`; 
-
-                // ▼▼▼ PERUBAHAN UKURAN GAMBAR: Menjadi Large (600x900) ▼▼▼
-                const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(keyword)}&w=600&h=900&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
-                
-                const newTitle = generateSeoTitle(keyword);
-                const cardHTML = `<article class="content-card"><a href="${linkUrl}"><img src="${imageUrl}" alt="${newTitle}" loading="lazy"><div class="content-card-body"><h3>${newTitle}</h3></div></a></article>`;
-                contentContainer.innerHTML += cardHTML;
-            });
-
-            currentIndex += batch.length;
-            loader.style.display = 'none';
-            isLoading = false;
-            if (currentIndex >= allKeywords.length) { window.removeEventListener('scroll', handleInfiniteScroll); loader.style.display = 'none'; }
-        }, 500);
-    }
-
-    function handleInfiniteScroll() { if ((window.innerHeight + window.scrollY) >= document.documentElement.offsetHeight - 100) { loadNextBatch(); } }
-
-    async function initializeDailyShuffle() {
-        const today = new Date().toISOString().slice(0, 10);
-        const storedDate = localStorage.getItem('shuffleDate');
-        const storedKeywords = localStorage.getItem('shuffledKeywords');
-        if (storedDate === today && storedKeywords) {
-            allKeywords = JSON.parse(storedKeywords);
-            startDisplay();
-        } else {
-            try {
-                const response = await fetch('keyword.txt');
-                if (!response.ok) throw new Error('keyword.txt file not found.');
-                const text = await response.text();
-                
-                const keywords = text.split('\n')
-                                     .map(k => k.trim())
-                                     .filter(k => k.trim() !== '');
-                
-                shuffleArray(keywords);
-                localStorage.setItem('shuffledKeywords', JSON.stringify(keywords));
-                localStorage.setItem('shuffleDate', today);
-                allKeywords = keywords;
-                startDisplay();
-            } catch (error) {
-                console.error('Error:', error);
-                contentContainer.innerHTML = `<p style="text-align:center; color:red;">${error.message}</p>`;
-                loader.style.display = 'none';
-            }
-        }
-    }
-
-    function startDisplay() { if (allKeywords.length > 0) { loadNextBatch(); window.addEventListener('scroll', handleInfiniteScroll); } else { contentContainer.innerHTML = '<p>No keywords to display.</p>'; loader.style.display = 'none'; } }
-
-    initializeDailyShuffle();
+        if (currentIndex >= allKeywords.length) {             
+            if(loader) loader.style.display = 'none';         
+        }     
+    }     
+    
+    window.addEventListener('scroll', () => {         
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;         
+        if (scrollTop + clientHeight >= scrollHeight - 100) {             
+            loadMoreContent();         
+        }     
+    });     
+    loadKeywords(); 
 });

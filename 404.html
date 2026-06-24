@@ -1,34 +1,37 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-<head>     
-    <meta charset="UTF-8">     
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">     
-    <title>Loading Hairstyle...</title>     
-    <script>         
-        (function() {             
-            var currentPath = window.location.pathname;                          
-            var pathSegments = currentPath.split('/').filter(Boolean);             
-            var keyword = pathSegments.pop();                          
-            if (keyword) {                 
-                keyword = keyword.replace(/\.html$/, '');                                  
-                var queryParams = window.location.search;                                  
-                var basePath = '/' + pathSegments.join('/');                 
-                if (basePath === '/') basePath = '';                                   
-                var redirectUrl = basePath + '/detail.html?q=' + encodeURIComponent(keyword);                                  
-                if (queryParams) {                     
-                    redirectUrl += '&' + queryParams.substring(1);                 
-                }                                  
-                window.location.replace(redirectUrl);             
-            } else {                 
-                window.location.replace('/index.html');             
-            }         
-        })();     
-    </script> 
-</head> 
-<body style="background-color: #121212; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Open Sans', sans-serif; color: #e0e0e0;">     
-    <div style="text-align: center;">         
-        <h2 style="color: #ffffff;">Preparing your hairstyle...</h2>         
-        <p style="color: #aaaaaa;">Please wait a moment while we load the style details.</p>     
-    </div> 
-</body> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Hairstyle...</title>
+    <script>
+        (function() {
+            var currentPath = window.location.pathname;
+            var pathSegments = currentPath.split('/').filter(Boolean);
+            var keyword = pathSegments.pop(); 
+            
+            if (keyword) {
+                keyword = keyword.replace(/\.html$/, '');
+                var queryParams = window.location.search;
+                var basePath = '/' + pathSegments.join('/');
+                if (basePath === '/') basePath = '';
+                
+                var redirectUrl = basePath + '/detail.html?q=' + encodeURIComponent(keyword);
+                
+                if (queryParams) {
+                    redirectUrl += '&' + queryParams.substring(1);
+                }
+                window.location.replace(redirectUrl);
+            } else {
+                window.location.replace('/index.html');
+            }
+        })();
+    </script>
+</head>
+<body style="background-color: #f8f0f3; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Open Sans', sans-serif; color: #333;">
+    <div style="text-align: center;">
+        <h2 style="color: #e84393;">Preparing your hairstyle...</h2>
+        <p style="color: #666;">Please wait a moment while we load the styling details.</p>
+    </div>
+</body>
 </html>

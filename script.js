@@ -34,16 +34,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generateSeoTitle(baseKeyword) {
         const hookWords = ['Trendy', 'Stylish', 'Modern', 'Classic', 'Elegant', 'Chic', 'Gorgeous', 'Best', 'Amazing', 'Flawless'];
-        const suffixWords = ['Hairstyle', 'Haircut', 'Style', 'Look', 'Idea'];
+        const suffixWords = ['Hairstyle', 'Haircut', 'Hair', 'Style', 'Look'];
         const randomHook = hookWords[Math.floor(Math.random() * hookWords.length)];
         const randomSuffix = suffixWords[Math.floor(Math.random() * suffixWords.length)];
+
         return `${randomHook} ${capitalizeEachWord(baseKeyword)} ${randomSuffix}`;
     }
 
     function loadMoreContent() {
         if (isLoading || currentIndex >= allKeywords.length) return;
+
         isLoading = true;
         if(loader) loader.style.display = 'block';
+
         const endIndex = Math.min(currentIndex + batchSize, allKeywords.length);
         const fragment = document.createDocumentFragment();
         
@@ -54,7 +57,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`;
             
             const queryImage = keyword + " hairstyle haircut hair";
-            const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=400&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
+            const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=600&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
+            
             const article = document.createElement('article');
             article.className = 'content-card';
             article.innerHTML = `
@@ -67,7 +71,9 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             fragment.appendChild(article);
         }
+
         if(contentContainer) contentContainer.appendChild(fragment);
+        
         currentIndex = endIndex;
         isLoading = false;
         

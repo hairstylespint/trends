@@ -8,7 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
         runAGC('');
         return;
     }
+
     const targetHtml = cleanQuery + '.html';
+
     fetch(targetHtml)
         .then(response => {
             if (response.ok) {
@@ -44,9 +46,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function generateSeoTitle(baseKeyword) {
             const hookWords = ['Trendy', 'Stylish', 'Modern', 'Classic', 'Elegant', 'Chic', 'Gorgeous', 'Best', 'Amazing', 'Flawless'];
-            const suffixWords = ['Hairstyle', 'Haircut', 'Style', 'Look', 'Idea'];
+            const suffixWords = ['Hairstyle', 'Haircut', 'Hair', 'Style', 'Look'];
             const randomHook = hookWords[Math.floor(Math.random() * hookWords.length)];
             const randomSuffix = suffixWords[Math.floor(Math.random() * suffixWords.length)];
+
             return `${randomHook} ${capitalizeEachWord(baseKeyword)} ${randomSuffix}`;
         }
 
@@ -70,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function fallbackDescription(term) {
-            const spintaxArticleTemplate = `{Discover|Explore} the best <strong>${capitalizeEachWord(term)}</strong> {hairstyles|haircuts|styling ideas} to {instantly elevate|perfectly transform} your {look|personal style}.`;
+            const spintaxArticleTemplate = `{Discover|Explore} the best <strong>${capitalizeEachWord(term)}</strong> {hairstyle|haircuts|hair designs} to {instantly elevate|perfectly transform} your {look|personal style}.`;
             if(detailBody) detailBody.innerHTML = `<p>${processSpintax(spintaxArticleTemplate)}</p>`;
         }
 
@@ -96,11 +99,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function populateMainContent(term) {
             const newTitle = generateSeoTitle(term);
-            document.title = `${newTitle} | StyleStrands`;
+            document.title = `${newTitle} | Nice Hairstyle`;
             if(detailTitle) detailTitle.textContent = newTitle;
+            
+            // 2:3 Ratio API parameters
             const queryImage = term + " hairstyle haircut hair";
-            const mainImageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=800&h=600&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
-            if(detailImageContainer) detailImageContainer.innerHTML = `<img src="${mainImageUrl}" alt="${newTitle}" style="width:100%; border-radius:8px;">`;
+            const mainImageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=600&h=900&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
+            
+            // Wrap main image with anchor tag linking to detail.html?q=
+            const keywordForUrl = term.replace(/\s/g, '-').toLowerCase();
+            if(detailImageContainer) detailImageContainer.innerHTML = `<a href="detail.html?q=${encodeURIComponent(keywordForUrl)}"><img src="${mainImageUrl}" alt="${newTitle}" style="width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:8px;"></a>`;
+            
             fetchDescriptionTemplate(term, newTitle);
         }
 
@@ -130,17 +139,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         const keywordForUrl = relatedTerm.replace(/\s/g, '-').toLowerCase();
                         const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`;
                         
-                        const queryImage = relatedTerm + " hairstyle haircut";
-                        const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=400&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
+                        const queryImage = relatedTerm + " hairstyle haircut hair";
+                        const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=600&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
                         
                         const newRelatedTitle = generateSeoTitle(relatedTerm);
-                        const card = `<article class="content-card"><a href="${linkUrl}"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body"><h3>${newRelatedTitle}</h3></div></a></article>`;
+                        
+                        // Added style="display:none;" to content-card-body
+                        const card = `<article class="content-card"><a href="${linkUrl}"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body" style="display:none;"><h3>${newRelatedTitle}</h3></div></a></article>`;
+                        
                         if(relatedPostsContainer) relatedPostsContainer.innerHTML += card;
                     });
                     checkSectionDisplay();
                 })
                 .catch(error => {
-                    console.error('Gagal mengambil keyword.txt:', error);
+                    console.error('Failed fetching keyword.txt:', error);
                     checkSectionDisplay();
                 });
         }
@@ -173,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (suggestions && suggestions.length > 0) {
                 suggestions.forEach(item => {
                     const relatedTerm = typeof item === 'string' ? item : item[0];
-                    let cleanTerm = relatedTerm ? relatedTerm.replace(/hairstyle|haircut/gi, '').trim() : '';
+                    let cleanTerm = relatedTerm ? relatedTerm.replace(/hairstyle|haircut|hair/gi, '').trim() : '';
                     if (!cleanTerm) cleanTerm = relatedTerm;
                     const termLower = cleanTerm.toLowerCase();
                     
@@ -186,10 +198,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`;
                     
                     const queryImage = cleanTerm + " hairstyle haircut hair";
-                    const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=400&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
+                    const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=600&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
                     
                     const newRelatedTitle = generateSeoTitle(cleanTerm);
-                    const card = `<article class="content-card"><a href="${linkUrl}"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body"><h3>${newRelatedTitle}</h3></div></a></article>`;
+                    
+                    // Added style="display:none;" to content-card-body
+                    const card = `<article class="content-card"><a href="${linkUrl}"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body" style="display:none;"><h3>${newRelatedTitle}</h3></div></a></article>`;
+                    
                     if(relatedPostsContainer) relatedPostsContainer.innerHTML += card;
                 });
             }

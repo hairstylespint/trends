@@ -3,6 +3,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const keywordFromQuery = params.get('q') || '';
     
     const cleanQuery = keywordFromQuery.replace(/-\d+$/, '');
+
+    // --- MODIFIKASI: Fetch URL Redome ---
+    let redomeLinks = [];
+    fetch('https://seribudollarperhari.github.io/banner/link.txt')
+        .then(response => response.text())
+        .then(data => {
+            // Memisahkan baris dan hanya mengambil baris yang valid
+            redomeLinks = data.split('\n').map(line => line.trim()).filter(line => line.startsWith('http'));
+        })
+        .catch(error => {
+            console.error('Gagal mengambil daftar link redome:', error);
+        });
+
+    // Menambahkan event listener global untuk klik ke link redome
+    document.addEventListener('click', function(e) {
+        const redomeBtn = e.target.closest('.redome-link');
+        if (redomeBtn) {
+            e.preventDefault();
+            if (redomeLinks.length > 0) {
+                // Pilih link secara acak
+                const randomLink = redomeLinks[Math.floor(Math.random() * redomeLinks.length)];
+                window.location.href = randomLink;
+            } else {
+                // Fallback jika link belum ter-load atau gagal
+                window.location.href = 'index.html';
+            }
+        }
+    });
+    // ------------------------------------
     
     if (!cleanQuery) {
         runAGC('');
@@ -35,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const relatedPostsContainer = document.getElementById('related-posts-container');
         
         const displayedKeywords = new Set();
+
         if (keyword) {
             displayedKeywords.add(keyword.toLowerCase());
         }
@@ -46,10 +76,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function generateSeoTitle(baseKeyword) {
             const hookWords = ['Trendy', 'Stylish', 'Modern', 'Classic', 'Elegant', 'Chic', 'Gorgeous', 'Best', 'Amazing', 'Flawless'];
-            const suffixWords = ['Hairstyle', 'Haircut', 'Hair', 'Style', 'Look'];
+            const suffixWords = ['Nail Art', 'Nails', 'Manicure', 'Design', 'Idea'];
             const randomHook = hookWords[Math.floor(Math.random() * hookWords.length)];
             const randomSuffix = suffixWords[Math.floor(Math.random() * suffixWords.length)];
-
             return `${randomHook} ${capitalizeEachWord(baseKeyword)} ${randomSuffix}`;
         }
 
@@ -73,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function fallbackDescription(term) {
-            const spintaxArticleTemplate = `{Discover|Explore} the best <strong>${capitalizeEachWord(term)}</strong> {hairstyle|haircuts|hair designs} to {instantly elevate|perfectly transform} your {look|personal style}.`;
+            const spintaxArticleTemplate = `{Discover|Explore} the best <strong>${capitalizeEachWord(term)}</strong> {nail art|manicures|nail designs} to {instantly elevate|perfectly transform} your {look|personal style}.`;
             if(detailBody) detailBody.innerHTML = `<p>${processSpintax(spintaxArticleTemplate)}</p>`;
         }
 
@@ -89,8 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (!keyword) {
-            if(detailTitle) detailTitle.textContent = 'Hairstyle Not Found';
-            if(detailBody) detailBody.innerHTML = '<p>Sorry, the requested hairstyle could not be found. Please return to the <a href="index.html">homepage</a>.</p>';
+            if(detailTitle) detailTitle.textContent = 'Nail Art Not Found';
+            if(detailBody) detailBody.innerHTML = '<p>Sorry, the requested nail design could not be found. Please return to the <a href="index.html">homepage</a>.</p>';
             if (relatedPostsContainer) {
                 relatedPostsContainer.closest('.related-posts-section').style.display = 'none';
             }
@@ -99,16 +128,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function populateMainContent(term) {
             const newTitle = generateSeoTitle(term);
-            document.title = `${newTitle} | Nice Hairstyle`;
+            document.title = `${newTitle} | Nails Art`;
             if(detailTitle) detailTitle.textContent = newTitle;
             
             // 2:3 Ratio API parameters
-            const queryImage = term + " hairstyle haircut hair";
+            const queryImage = term + " nail art manicure nails";
             const mainImageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=600&h=900&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
             
-            // Wrap main image with anchor tag linking to detail.html?q=
-            const keywordForUrl = term.replace(/\s/g, '-').toLowerCase();
-            if(detailImageContainer) detailImageContainer.innerHTML = `<a href="detail.html?q=${encodeURIComponent(keywordForUrl)}"><img src="${mainImageUrl}" alt="${newTitle}" style="width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:8px;"></a>`;
+            // MODIFIKASI: Wrap gambar utama dengan class redome-link untuk trigger redirect
+            if(detailImageContainer) detailImageContainer.innerHTML = `<a href="javascript:void(0)" class="redome-link"><img src="${mainImageUrl}" alt="${newTitle}" style="width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:8px;"></a>`;
             
             fetchDescriptionTemplate(term, newTitle);
         }
@@ -136,16 +164,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     selectedKeywords.forEach(relatedTerm => {
                         displayedKeywords.add(relatedTerm.toLowerCase());
                         
-                        const keywordForUrl = relatedTerm.replace(/\s/g, '-').toLowerCase();
-                        const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`;
-                        
-                        const queryImage = relatedTerm + " hairstyle haircut hair";
+                        const queryImage = relatedTerm + " nail art manicure";
                         const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=600&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
                         
                         const newRelatedTitle = generateSeoTitle(relatedTerm);
                         
-                        // Added style="display:none;" to content-card-body
-                        const card = `<article class="content-card"><a href="${linkUrl}"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body" style="display:none;"><h3>${newRelatedTitle}</h3></div></a></article>`;
+                        // MODIFIKASI: Menggunakan class redome-link dan menampilkan teks dari txt (display:none dihapus)
+                        const card = `<article class="content-card"><a href="javascript:void(0)" class="redome-link"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body">${capitalizeEachWord(relatedTerm)}</div></a></article>`;
                         
                         if(relatedPostsContainer) relatedPostsContainer.innerHTML += card;
                     });
@@ -167,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function generateRelatedPosts(term) {
             const script = document.createElement('script');
-            script.src = `https://suggestqueries.google.com/complete/search?client=youtube&jsonp=handleRelatedSuggest&hl=en&q=${encodeURIComponent(term + " hairstyle")}`;
+            script.src = `https://suggestqueries.google.com/complete/search?client=youtube&jsonp=handleRelatedSuggest&hl=en&q=${encodeURIComponent(term + " nail art")}`;
             document.head.appendChild(script);
             script.onload = () => script.remove();
             script.onerror = () => {
@@ -185,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (suggestions && suggestions.length > 0) {
                 suggestions.forEach(item => {
                     const relatedTerm = typeof item === 'string' ? item : item[0];
-                    let cleanTerm = relatedTerm ? relatedTerm.replace(/hairstyle|haircut|hair/gi, '').trim() : '';
+                    let cleanTerm = relatedTerm ? relatedTerm.replace(/nail art|nails|manicure/gi, '').trim() : '';
                     if (!cleanTerm) cleanTerm = relatedTerm;
                     const termLower = cleanTerm.toLowerCase();
                     
@@ -194,20 +219,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     displayedKeywords.add(termLower);
                     relatedCount++;
                     
-                    const keywordForUrl = cleanTerm.replace(/\s/g, '-').toLowerCase();
-                    const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`;
-                    
-                    const queryImage = cleanTerm + " hairstyle haircut hair";
+                    const queryImage = cleanTerm + " nail art manicure nails";
                     const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=600&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
                     
                     const newRelatedTitle = generateSeoTitle(cleanTerm);
                     
-                    // Added style="display:none;" to content-card-body
-                    const card = `<article class="content-card"><a href="${linkUrl}"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body" style="display:none;"><h3>${newRelatedTitle}</h3></div></a></article>`;
+                    // MODIFIKASI: Menggunakan class redome-link dan menampilkan teks original dari bawaan API (cleanTerm)
+                    const card = `<article class="content-card"><a href="javascript:void(0)" class="redome-link"><img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy"><div class="content-card-body"><h3>${capitalizeEachWord(cleanTerm)}</h3></div></a></article>`;
                     
                     if(relatedPostsContainer) relatedPostsContainer.innerHTML += card;
                 });
             }
+            
             appendRandomKeywords();
         };
 
